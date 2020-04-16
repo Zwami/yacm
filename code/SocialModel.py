@@ -20,6 +20,9 @@ def compute_num_symptomatic(model):
 def compute_num_recovered(model):
     agent_states = [agent.state for agent in model.schedule.agents]
     return agent_states.count(State.R)
+def compute_num_contagious(model):
+    agent_states = [agent.state for agent in model.schedule.agents]
+    return agent_states.count(State.I) + agent_states.count(State.A)
 
 
 #MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
@@ -32,15 +35,12 @@ class SocialModel(Model):
             if (locations[i].node_type == NodeType.H):
                 h = { "x" : x, "y" : y }
                 homes.append(h)
-                print("added home to x: ", x, " y: ", y)
             elif (locations[i].node_type == NodeType.C):
                 c = { "x" : x, "y" : y }
                 clinics.append(c)
-                print("added clinic to x: ", x, " y: ", y)
             else :
                 s = { "x" : x, "y" : y }
                 services.append(s)
-                print("added service to x: ", x, " y: ", y)
 
     def __init__(self,\
                  population_size,\
@@ -71,6 +71,7 @@ class SocialModel(Model):
         self.services = []
         self.inf_trans = trans_infection
         self.p_infect = p_infect
+        self.running = True# Must be set for server to work
 
         self.__setup_locations(locations,self.homes,self.clinics,self.services,grid_dim)
 
@@ -97,6 +98,7 @@ class SocialModel(Model):
             {"Num Susceptible":compute_num_susceptible, \
              "Num Asymptomatic":compute_num_asymptomatic, \
              "Num Symptomatic":compute_num_symptomatic, \
+             "Num Contagious":compute_num_contagious, \
              "Num Recovered":compute_num_recovered})
 
     def grid_location_type(self,pos):

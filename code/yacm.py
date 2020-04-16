@@ -6,6 +6,39 @@ import matplotlib
 #matplotlib.use('macosx')
 from matplotlib import pyplot as plt
 import pandas
+from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.ModularVisualization import ModularServer
+import math
+from Person import State
+#import yacm_server
+def agent_portrayal(agent):
+
+    portrayal = {"Shape": "circle",
+                 "Filled": "false",
+                 "r": 0.9}
+ #                "text": "H"}
+    if (agent.state == State.S):
+        portrayal["Color"] = "blue"
+        portrayal["Layer"] = 0
+    elif (agent.state == State.A):
+        portrayal["Color"] = "red"
+        portrayal["Layer"] = 1
+        portrayal["r"] = 0.7
+    elif (agent.state == State.I):
+        portrayal["Color"] = "grey"
+        portrayal["Layer"] = 2
+        portrayal["r"] = 0.5
+    else:
+        portrayal["Color"] = "blue"
+        portrayal["Layer"] = 0
+        portrayal["r"] = 0.9
+
+    #if (agent.current_loc == NodeType.C):
+    #    portrayal["text"] = "C"
+    #elif (agent.current_loc == NodeType.S):
+    #    portrayal["text"] = "S"
+
+    return portrayal
 
 print("Yet Another Covid Model")
 
@@ -20,14 +53,14 @@ n_steps = 100
 # 1. Define Population
 # TODO - Consider doing this by sampling?
 population_size = 100
-n_doc = 10
-n_essential = 25
+n_doc = 5
+n_essential = 30
 # Remaining are implicitly the "normal" type (social distancing)
 # TODO - Make sure sum is <= 1.0
 initial_sick = 5 # randomly assign TODO - consider sampling and doing a proportion?
 
 # 2. Define Environment
-number_households = 8 # each person is assigned one "household" that may be shared with others
+number_households = 40 # each person is assigned one "household" that may be shared with others
 # TODO - First draft likely won't handle multiple hospitals/services, should add soon
 number_hospitals = 1 # Doctors work here, sick population goes here with higher probability
 number_services = 1 # Essential population works here. Non-sick population goes here with higher probability
@@ -56,9 +89,20 @@ trans_sick = np.matrix('0.9 0.01 0.09; 0.5 0.5 0.0; 0.01 0.0 0.99')
 # TODO (soon!) Add negation effects (like PPE) dependent on location (eg hospital should have lower)
 # This is used to calculate transition of healthy population -> infected asymptomatic, however it is 
 # not constant as it is based on number of other people in the same node
-p_infect = 0.1
+p_infect = 0.02
 # State 1 is Infected Asymptomatic, 2 is Infected Symptomatic, 3 is Recovered [TODO - 4, Deceased?]
 trans_infection = np.matrix('0.9 0.08 0.02; 0.0 0.98 0.02; 0.0 0.0 1.0')
+model_params = { "population_size":population_size,
+                "n_doc":n_doc,
+                "n_essential":n_essential,
+                "initial_sick":initial_sick,
+                "locations":locations,
+                "trans_doctor":trans_doctor,
+                "trans_essential":trans_essential,
+                "trans_control":trans_control,
+                "trans_sick":trans_sick,
+                "p_infect":p_infect,
+                "trans_infection":trans_infection}
 
 # TODO - Clean this up...(dict?)
 sm = SocialModel(population_size,\
@@ -73,14 +117,34 @@ sm = SocialModel(population_size,\
                  p_infect,\
                  trans_infection)
 
+grid_dim = math.ceil(math.sqrt(len(locations))) # smallest possible square grid to contain all nodes
+grid = CanvasGrid(agent_portrayal, grid_dim, grid_dim, 500, 500)
+chart = ChartModule([{"Label": "Num Susceptible",
+                      "Color": "Blue"},
+                     {"Label": "Num Asymptomatic",
+                      "Color": "Red"},
+                     {"Label": "Num Symptomatic",
+                      "Color": "Grey"},
+                     {"Label": "Num Recovered",
+                      "Color": "Green"},
+                     {"Label": "Num Contagious",
+                      "Color": "Black"},
+                    ],
+                    data_collector_name='datacollector')
+server = ModularServer(SocialModel,
+                       [grid, chart],
+                       "Social Model",
+                       model_params)
+
+server.port = 8521 # The default
+server.launch()
+
 for i in range(n_steps):
     sm.step()
     print("Step ", i, " complete!")
 
-print ("Plotting!")
 pop_stats = sm.datacollector.get_model_vars_dataframe()
 print (pop_stats)
 fig = pop_stats.plot()
-plt.show(fig)
-print ("plotted?")
+#plt.show(fig)
 #plt.show()
