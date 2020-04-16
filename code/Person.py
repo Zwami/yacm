@@ -20,7 +20,9 @@ class Person(Agent):
         self.home_node = home_node # TODO - Need to get nodes setup
 
     def step(self):
-        # TODO illness transition (always pre move)
-        # TODO Move Active Node
+        # 1. Get all other infected people on current node
+        # 2. Calculate if infected
+        # 3. Move
+        # 4. Update infected state
         print("stepped person ", self.unique_id)
 

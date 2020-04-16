@@ -10,4 +10,3 @@ class Location:
     def __init__(self, loc_id, node_type: NodeType):
         self.loc_id = loc_id
         self.node_type = node_type
-        self.current_population = []

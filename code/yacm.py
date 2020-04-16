@@ -1,27 +1,40 @@
 #/bin/python3
 from SocialModel import SocialModel
+from Location import Location, NodeType
+import numpy as np
 
 print("Yet Another Covid Model")
 
 # TODO - Description
 
+# TODO - Implement Graph library? Not sure how useful except for visualization...
+
 # Step size is effectively "1 hour" 
-n_steps = 1000
+n_steps = 100
 
 #### CONFIGURATION #### (TODO, make GUI/file input?) 
 # 1. Define Population
 # TODO - Consider doing this by sampling?
 population_size = 100
-prop_doc = 0.05
-prop_essential = 0.25
+n_doc = 5
+n_essential = 25
 # Remaining are implicitly the "normal" type (social distancing)
 # TODO - Make sure sum is <= 1.0
 initial_sick = 5 # randomly assign TODO - consider sampling and doing a proportion?
 
 # 2. Define Environment
-number_households = 8 # each person is assigned one "household" 
+number_households = 8 # each person is assigned one "household" that may be shared with others
+# TODO - First draft likely won't handle multiple hospitals/services, should add soon
 number_hospitals = 1 # Doctors work here, sick population goes here with higher probability
 number_services = 1 # Essential population works here. Non-sick population goes here with higher probability
+
+locations = []
+for i in range(number_households):
+    locations.append(Location(len(locations),NodeType.H))
+for i in range(number_hospitals):
+    locations.append(Location(len(locations),NodeType.C))
+for i in range(number_services):
+    locations.append(Location(len(locations),NodeType.S))
 
 # 3. Define Movement Transition Rates (TODO simplify interface)
 # Stochastic Matrices to define how population types move. 
@@ -43,5 +56,18 @@ p_infect = 0.1
 # State 1 is Infected Asymptomatic, 2 is Infected Symptomatic, 3 is Recovered [TODO - 4, Deceased?]
 trans_infection = np.matrix('0.9 0.08 0.02; 0.0 0.98 0.02; 0.0 0.0 1.0')
 
-sm = SocialModel(10)
-sm.step()
+# TODO - Clean this up...
+sm = SocialModel(population_size,\
+                 n_doc,\
+                 n_essential,\
+                 initial_sick,\
+                 locations,\
+                 trans_doctor,\
+                 trans_essential,\
+                 trans_control,\
+                 p_infect,\
+                 trans_infection)
+
+for i in range(n_steps):
+    sm.step()
+    print("Step ", i, " complete!")
