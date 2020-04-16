@@ -9,20 +9,29 @@ class State(Enum):
     R = 4 # Recovered
     # D = 5 # Deceased TODO - Add this. May need separate location?
 
-# TODO Configurable transition probabilities for States
+class PopType(Enum):
+    C = 1 # Control
+    D = 2 # Doctor
+    E = 3 # Essential
 
-# Base class for agents in model
+# Agent class
 class Person(Agent):
 
-    def __init__(self, unique_id, model, home_node):
+    def __init__(self, unique_id, model, home_node, pop_type: PopType, init_state: State, well_trans, sick_trans):
         super().__init__(unique_id, model)
-        self.state = State['S'] # by default everyone is Susceptible
-        self.home_node = home_node # TODO - Need to get nodes setup
+        self.home_node = home_node
+        self.pop_type = pop_type
+        self.state = init_state
+        self.well_trans = well_trans
+        self.sick_trans = sick_trans
+        print("Agent ", self.unique_id, " home node ", self.home_node)
+        print(self.state)
+        print(self.pop_type)
+        # I believe Mesa keeps track of current location, so should not need to define as a member
 
     def step(self):
         # 1. Get all other infected people on current node
         # 2. Calculate if infected
         # 3. Move
         # 4. Update infected state
-        print("stepped person ", self.unique_id)
-
+        pass
