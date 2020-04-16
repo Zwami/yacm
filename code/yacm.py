@@ -10,7 +10,7 @@ print("Yet Another Covid Model")
 # TODO - Implement Graph library? Not sure how useful except for visualization...
 
 # Step size is effectively "1 hour" 
-n_steps = 0
+n_steps = 1
 
 #### CONFIGURATION #### (TODO, make GUI/file input?) 
 # 1. Define Population

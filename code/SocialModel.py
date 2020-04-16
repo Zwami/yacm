@@ -5,6 +5,7 @@ from Person import Person, PopType, State
 from Location import NodeType
 import random
 import math
+import numpy as np
 
 #MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
 
@@ -77,6 +78,23 @@ class SocialModel(Model):
             a = Person(i,self,home_node,p_type,sick_state,well_trans,sick_trans)
             self.schedule.add(a)
             self.grid.place_agent(a, (a.home_node["x"],a.home_node["y"])) # everyone starts at home
+
+    def grid_location_type(self,pos):
+        xy = {"x":pos[0],"y":pos[1]}
+        if (self.clinics.count(xy) > 0) : return NodeType.C
+        elif (self.services.count(xy) > 0) : return NodeType.S
+        elif (self.homes.count(xy) > 0) : return NodeType.H
+        else: print("node not found? ", xy)
+
+    # expect that state value has already been converted to appropriate row index
+    def state_transition(self,trans_matrix,row_value):
+        row = trans_matrix[row_value]
+        draw = random.random()
+        curr_sum = 0.0
+        for i in range(np.size(row)):
+            curr_sum += row.item(0,i)
+            if (draw <= curr_sum):
+                return i
 
     def step(self):
         self.schedule.step()
