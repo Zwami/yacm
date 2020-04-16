@@ -1,14 +1,28 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+from mesa.datacollection import DataCollector
 from Person import Person, PopType, State
 from Location import NodeType
 import random
 import math
 import numpy as np
 
-#MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
+def compute_num_susceptible(model):
+    agent_states = [agent.state for agent in model.schedule.agents]
+    return agent_states.count(State.S)
+def compute_num_asymptomatic(model):
+    agent_states = [agent.state for agent in model.schedule.agents]
+    return agent_states.count(State.A)
+def compute_num_symptomatic(model):
+    agent_states = [agent.state for agent in model.schedule.agents]
+    return agent_states.count(State.I)
+def compute_num_recovered(model):
+    agent_states = [agent.state for agent in model.schedule.agents]
+    return agent_states.count(State.R)
 
+
+#MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
 class SocialModel(Model):
 
     def __setup_locations(self,locations,homes,clinics,services,grid_dim):
@@ -79,6 +93,12 @@ class SocialModel(Model):
             self.schedule.add(a)
             self.grid.place_agent(a, (a.home_node["x"],a.home_node["y"])) # everyone starts at home
 
+        self.datacollector = DataCollector(model_reporters = \
+            {"Num Susceptible":compute_num_susceptible, \
+             "Num Asymptomatic":compute_num_asymptomatic, \
+             "Num Symptomatic":compute_num_symptomatic, \
+             "Num Recovered":compute_num_recovered})
+
     def grid_location_type(self,pos):
         xy = {"x":pos[0],"y":pos[1]}
         if (self.clinics.count(xy) > 0) : return NodeType.C
@@ -97,4 +117,5 @@ class SocialModel(Model):
                 return i
 
     def step(self):
+        self.datacollector.collect(self)
         self.schedule.step()

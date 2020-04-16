@@ -2,6 +2,10 @@
 from SocialModel import SocialModel
 from Location import Location, NodeType
 import numpy as np
+import matplotlib
+#matplotlib.use('macosx')
+from matplotlib import pyplot as plt
+import pandas
 
 print("Yet Another Covid Model")
 
@@ -10,14 +14,14 @@ print("Yet Another Covid Model")
 # TODO - Implement Graph library? Not sure how useful except for visualization...
 
 # Step size is effectively "1 hour" 
-n_steps = 1
+n_steps = 100
 
 #### CONFIGURATION #### (TODO, make GUI/file input?) 
 # 1. Define Population
 # TODO - Consider doing this by sampling?
-population_size = 10
-n_doc = 5
-n_essential = 2
+population_size = 100
+n_doc = 10
+n_essential = 25
 # Remaining are implicitly the "normal" type (social distancing)
 # TODO - Make sure sum is <= 1.0
 initial_sick = 5 # randomly assign TODO - consider sampling and doing a proportion?
@@ -72,3 +76,11 @@ sm = SocialModel(population_size,\
 for i in range(n_steps):
     sm.step()
     print("Step ", i, " complete!")
+
+print ("Plotting!")
+pop_stats = sm.datacollector.get_model_vars_dataframe()
+print (pop_stats)
+fig = pop_stats.plot()
+plt.show(fig)
+print ("plotted?")
+#plt.show()
