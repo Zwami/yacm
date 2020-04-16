@@ -27,7 +27,7 @@ class Person(Agent):
         self.state = new_state
 
     def step(self):
-        # TODO Move
-        # TODO state transition
-        pass
+        # TODO illness transition (always pre move)
+        # TODO Move Active Node
+        print("stepped person ", self.unique_id)
 

@@ -6,3 +6,4 @@ from SocialModel import SocialModel
 print("Hello World!")
 
 sm = SocialModel(10)
+sm.step()
