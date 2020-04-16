@@ -10,6 +10,7 @@ mesa = "*"
 jupyter = "*"
 matplotlib = "*"
 numpy = "*"
+networkx = "*"
 
 [requires]
 python_version = "3.8"
