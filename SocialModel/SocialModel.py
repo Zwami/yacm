@@ -23,6 +23,15 @@ def compute_num_recovered(model):
 def compute_num_contagious(model):
     agent_states = [agent.state for agent in model.schedule.agents]
     return agent_states.count(State.I) + agent_states.count(State.A)
+def compute_home_pop(model):
+    agent_loc = [agent.current_loc for agent in model.schedule.agents]
+    return agent_loc.count(NodeType.H)
+def compute_clinic_pop(model):
+    agent_loc = [agent.current_loc for agent in model.schedule.agents]
+    return agent_loc.count(NodeType.C)
+def compute_service_pop(model):
+    agent_loc = [agent.current_loc for agent in model.schedule.agents]
+    return agent_loc.count(NodeType.S)
 
 
 #MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
@@ -82,7 +91,6 @@ class SocialModel(Model):
         self.services = []
         self.inf_trans = trans_infection
         self.p_infect = p_infect
-        self.running = True# Must be set for server to work
 
         self.__setup_locations(locations,self.homes,self.clinics,self.services,grid_dim)
 
@@ -112,6 +120,13 @@ class SocialModel(Model):
              "Num Contagious":compute_num_contagious, \
              "Num Recovered":compute_num_recovered})
 
+        self.bar_datacollector = DataCollector(model_reporters = \
+            {"Home Pop":compute_home_pop, \
+             "Clinic Pop":compute_clinic_pop, \
+             "Service Pop":compute_service_pop})
+        self.running = True# Must be set for server to work
+
+
     def grid_location_type(self,pos):
         xy = {"x":pos[0],"y":pos[1]}
         if (self.clinics.count(xy) > 0) : return NodeType.C
@@ -131,4 +146,8 @@ class SocialModel(Model):
 
     def step(self):
         self.datacollector.collect(self)
+        self.bar_datacollector.collect(self)
         self.schedule.step()
+        # stop running once no more contagious
+        if (compute_num_contagious(self) == 0):
+            self.running = False

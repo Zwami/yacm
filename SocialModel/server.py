@@ -1,37 +1,39 @@
-from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.modules import CanvasGrid, ChartModule, BarChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.UserParam import UserSettableParameter
+from mesa.visualization.TextVisualization import *
 from SocialModel.SocialModel import *
 from SocialModel.Person import State
 import math
 
 def agent_portrayal(agent):
-
     portrayal = {"Shape": "rectangle",
-                 "Filled": "true",
-                 "r": 0.9}
- #                "text": "H"}
-    if (agent.state == State.S):
-        portrayal["Color"] = "blue"
-        portrayal["Layer"] = 0
-    elif (agent.state == State.A):
-        portrayal["Color"] = "red"
-        portrayal["Layer"] = 1
-        portrayal["r"] = 0.7
-    elif (agent.state == State.I):
-        portrayal["Color"] = "grey"
-        portrayal["Layer"] = 2
-        portrayal["r"] = 0.5
-    else:
-        portrayal["Color"] = "blue"
-        portrayal["Layer"] = 0
-        portrayal["r"] = 0.9
+                 "Filled": "False",
+                 "Layer": 0,
+                 "w": 1,
+                 "r":1,
+                 "text_color": "Black"}
+    portrayal["text"] = str(len(agent.model.grid.get_cell_list_contents([agent.pos])))
+#    if (agent.state == State.S):
+#        portrayal["Color"] = "blue"
+#        portrayal["Layer"] = 0
+#    elif (agent.state == State.A):
+#        portrayal["Color"] = "red"
+#        portrayal["Layer"] = 1
+#        portrayal["r"] = 0.7
+#    elif (agent.state == State.I):
+#        portrayal["Color"] = "grey"
+#        portrayal["Layer"] = 2
+#        portrayal["r"] = 0.5
+#    else:
+#        portrayal["Color"] = "blue"
+#        portrayal["Layer"] = 0
+#        portrayal["r"] = 0.9
 
     #if (agent.current_loc == NodeType.C):
     #    portrayal["text"] = "C"
     #elif (agent.current_loc == NodeType.S):
     #    portrayal["text"] = "S"
-
     return portrayal
 
 # TODO - User interface?
@@ -76,8 +78,17 @@ chart = ChartModule([{"Label": "Num Susceptible",
                     ],
                     data_collector_name='datacollector')
 
+barchart = BarChartModule([{"Label": "Home Pop",
+                      "Color": "Blue"},
+                     {"Label": "Clinic Pop",
+                      "Color": "Red"},
+                     {"Label": "Service Pop",
+                      "Color": "Black"},
+                    ],
+                    data_collector_name='bar_datacollector')
+
 server = ModularServer(SocialModel,
-                       [grid, chart],
+                       [grid, chart,barchart],
                        "Social Model",
                        model_params)
 
