@@ -2,8 +2,8 @@ from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
-from Person import Person, PopType, State
-from Location import NodeType
+from SocialModel.Person import Person, PopType, State
+from SocialModel.Location import NodeType, Location
 import random
 import math
 import numpy as np
@@ -47,13 +47,24 @@ class SocialModel(Model):
                  n_doc,\
                  n_essential,\
                  initial_sick,\
-                 locations,\
+                 n_homes,\
+                 n_services,\
+                 n_clinics,\
                  trans_doctor,\
                  trans_essential,\
                  trans_control,\
                  trans_sick,\
                  p_infect,\
                  trans_infection):
+        # TODO clean this up
+        locations = []
+        for i in range(n_homes):
+            locations.append(Location(len(locations),NodeType.H))
+        for i in range(n_clinics):
+            locations.append(Location(len(locations),NodeType.C))
+        for i in range(n_services):
+            locations.append(Location(len(locations),NodeType.S))
+
         self.num_agents = population_size
         self.schedule = RandomActivation(self)
         # determine initially sick agents (a bit yucky)

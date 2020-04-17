@@ -1,6 +1,6 @@
 from mesa import Agent
 from enum import Enum
-from Location import NodeType
+from SocialModel.Location import NodeType
 import random
 
 # Enhanced SIR epidemic model states
