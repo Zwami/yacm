@@ -27,13 +27,13 @@ def compute_num_contagious(model):
     return agent_states.count(State.I) + agent_states.count(State.A)
 def compute_home_pop(model):
     agent_loc = [agent.current_loc for agent in model.schedule.agents]
-    return agent_loc.count(NodeType.H)
+    return agent_loc.count(NodeType.H) / len(model.schedule.agents)
 def compute_clinic_pop(model):
     agent_loc = [agent.current_loc for agent in model.schedule.agents]
-    return agent_loc.count(NodeType.C)
+    return agent_loc.count(NodeType.C) / len(model.schedule.agents)
 def compute_service_pop(model):
     agent_loc = [agent.current_loc for agent in model.schedule.agents]
-    return agent_loc.count(NodeType.S)
+    return agent_loc.count(NodeType.S) / len(model.schedule.agents)
 def known_cases_past_day(model):
     sum_cases = 0
     for i in (model.known_cases_in_last_day):
@@ -52,7 +52,13 @@ def known_total_cases(model):
 
 def true_total_cases(model):
     return model.unknown_cumulative_cases # all cases start as unknown so this is best running tally
-
+def patients_at_clinic(model):
+    num_patients = 0
+    for c in model.clinics:
+        clinic_pop = model.grid.get_cell_list_contents([c])
+        for p in clinic_pop:
+            if (p.state == State.I or p.pop_type != PopType.D): num_patients += 1
+    return num_patients
 
 #MultiGrid maybe not the MOST efficient way to do this, but adds some convenient Mesa hooks
 class SocialModel(Model):
@@ -128,7 +134,8 @@ class SocialModel(Model):
         self.clinics = []
         self.services = []
         self.inf_trans = trans_infection
-        self.p_infect = R0 / (t_contagious * 24.)
+        R0_ScaleFactor = 0.1 # Test
+        self.p_infect = R0 * R0_ScaleFactor / (t_contagious * 24.)
 
         self.__setup_locations(locations,self.homes,self.clinics,self.services,grid_dim)
         self.max_steps = max_steps
@@ -187,6 +194,8 @@ class SocialModel(Model):
                                              {"Known Number Cases" : known_total_cases,
                                              "True Number Cases" : true_total_cases,
                                              "True Number Recovered" : compute_num_recovered})
+        self.num_patients = DataCollector(model_reporters =
+                                         {"Number of Patients at Hospitals" : patients_at_clinic})
 
         self.running = True# Must be set for server to work
 
@@ -219,6 +228,7 @@ class SocialModel(Model):
         self.known_cumulative_cases += self.known_cases_this_step
         self.unknown_cumulative_cases += self.unknown_cases_this_step
         self.cumulative_cases.collect(self)
+        self.num_patients.collect(self)
         # stop running once no more contagious
         if (compute_num_contagious(self) == 0 or self.schedule.steps >= self.max_steps):
             self.running = False

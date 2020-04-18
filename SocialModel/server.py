@@ -41,14 +41,16 @@ def agent_portrayal(agent):
 #trans_control = np.matrix('0.99 0.01 0.0; 0.5 0.5 0.0;  0.1 0.0 0.9')
 # For simplicity, behavior of all (symptomatic) sick patients is the same
 # Unsure yet how to make these configurable in the same way as the state transitions of movement
-trans_sick = np.matrix('0.9998 0.0 0.0002; 0.9998 0.0 0.0002; 0.00 0.0 1.0')
+#trans_sick = np.matrix('0.9998 0.0 0.0002; 0.9998 0.0 0.0002; 0.00 0.0 1.0')
+trans_sick = np.matrix('0.99 0.0 0.01; 0.9998 0.0 0.0002; 0.00 0.0 1.0')
 
 # 75% of infected show symptoms within 14 days 
 # https://www.npr.org/sections/health-shots/2020/03/31/824155179/cdc-director-on-models-for-the-months-to-come-this-virus-is-going-to-be-with-us
 # https://annals.org/aim/fullarticle/2762808/incubation-period-coronavirus-disease-2019-covid-19-from-publicly-reported
 # median incubation period 5.1 days
 # mean incubation period 6.4 days
-trans_infection = np.matrix('0.9963 0.003 0.0007; 0.0 0.998 0.002; 0.0 0.0 1.0')
+#trans_infection = np.matrix('0.9963 0.003 0.0007; 0.0 0.998 0.002; 0.0 0.0 1.0')
+trans_infection = np.matrix('0.998 0.00175 0.00025; 0.0 0.998 0.002; 0.0 0.0 1.0')
 # Notable test case, Columbia MD
 # Pop 99615
 # Hospitals 1
@@ -86,7 +88,7 @@ model_params = {
     "p_time_home_essential": UserSettableParameter('number', 'Essential Worker: Percent of time spent at home', value=0.7),
     "p_time_service_essential": UserSettableParameter('number', 'Essential Worker: Percent of time spent at service', value=0.3),
     "p_time_clinic_essential": UserSettableParameter('number', 'Essential Worker: Percent of time spent at hospital', value=0.0),
-    "max_steps": UserSettableParameter('number', 'Maximum number of steps', value=1008),
+    "max_steps": UserSettableParameter('number', 'Maximum number of steps', value=10000),#1008
     "trans_sick":trans_sick,
     "trans_infection":trans_infection}
 
@@ -122,7 +124,7 @@ total_cases = ChartModule([{"Label": "Known Number Cases",
                     ],
                     data_collector_name='cumulative_cases')
 
-barchart = PieChartModule([{"Label": "Home Pop",
+popchart = ChartModule([{"Label": "Home Pop",
                       "Color": "Blue"},
                      {"Label": "Clinic Pop",
                       "Color": "Red"},
@@ -131,8 +133,12 @@ barchart = PieChartModule([{"Label": "Home Pop",
                     ],
                     data_collector_name='loc_datacollector')
 
+patchart = ChartModule([{"Label": "Number of Patients at Hospitals",
+                      "Color": "Red"}
+                    ],
+                    data_collector_name='num_patients')
 server = ModularServer(SocialModel,
-                       [total_cases,cpd,chart,barchart],
+                       [total_cases,cpd,chart,popchart,patchart],
                        "Social Model",
                        model_params)
 
