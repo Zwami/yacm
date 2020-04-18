@@ -28,6 +28,7 @@ class Person(Agent):
         self.sick_trans = sick_trans
         self.next_state = self.state
         self.current_loc = NodeType.H
+        self.infectability = 0.
         #print("Agent ", self.unique_id, " home node ", self.home_node)
         #print(self.state)
         #print(self.pop_type)
@@ -36,40 +37,61 @@ class Person(Agent):
     def step(self):
         # 1. Determine disease progression
         # 1a. Get all other infected people on current node (if susceptible)
+        self.__calculate_next_state()
+        # 2. Move
+        self.__calculate_movement()
+        # 3. Update infected state
+        if (self.state != State.I and self.next_state == State.I): #known infected
+            self.model.known_cases_this_step += 1
+        if (self.state != State.A and self.next_state == State.A): #unknown infected
+            self.model.unknown_cases_this_step += 1
+
+        self.state = self.next_state
+
+    def __calculate_next_state(self):
         if (self.state == State.S):
             p_avoids_infection = 1.0
-            others = self.model.grid.get_cell_list_contents([self.pos])
-            for i in others:
-                if (i.state == State.A or i.state == State.I):
-                    p_avoids_infection *= (1.0 - self.model.p_infect)
+#            others = self.model.grid.get_cell_list_contents([self.pos])
+            n_infected = self.model.inf_counter_cell[self.pos[0]][self.pos[1]]
+            inf_modifier = 1.0
+            if self.current_loc == NodeType.C: inf_modifier = self.model.hospital_transmission_modifier
+            elif self.current_loc == NodeType.S: inf_modifier = self.model.service_transmission_modifier
+            p_avoids_infection = (1.0 - (self.model.p_infect * inf_modifier))**n_infected
             draw = random.random()
             #print ("p(infected) ", 1 -p_avoids_infection)
             #print ("draw value ", draw)
             if (draw > p_avoids_infection):
                 self.next_state = State.A
+                self.infectability = self.model.p_infect
+            else:
+                self.next_state = self.state
+                if self.next_state == State.R: self.infectability = 0.
                 #print("Agent : ", self.unique_id, " infected!")
         # 1b. Calculate updated disease state otherwise
         else: # Part of infection chain (TODO, make sure this is appropriately represented)
             next_state_val = self.model.state_transition(self.model.inf_trans,self.state.value - 2)
             self.next_state = State(next_state_val+2)
-            #print("Agent : ", self.unique_id, " next state ", self.next_state)
-        # 2. Move
-        cloc = self.model.grid_location_type(self.pos).value
+
+    def __calculate_movement(self):
         if (self.state != State.I):
-            next_loc = self.model.state_transition(self.well_trans,cloc-1)
+            next_loc = self.model.state_transition(self.well_trans,self.current_loc.value-1)
         else:
-            next_loc = self.model.state_transition(self.sick_trans,cloc-1)
-        if (next_loc == 0): # home
-            self.model.grid.move_agent(self,(self.home_node["x"],self.home_node["y"]))
+            next_loc = self.model.state_transition(self.sick_trans,self.current_loc.value-1)
+
+        next_pos = self.pos
+        if (next_loc == 0 and self.current_loc != NodeType.H): # home
+            next_pos = self.home_node
             self.current_loc = NodeType.H
-        elif (next_loc == 1): # service, pick at random 
-            s = random.choice(self.model.services)
-            self.model.grid.move_agent(self,(s["x"],s["y"]))
+        elif (next_loc == 1 and self.current_loc != NodeType.S): # service, pick at random 
+            next_pos = random.choice(self.model.services)
             self.current_loc = NodeType.S
-        else:
-            s = random.choice(self.model.clinics)
-            self.model.grid.move_agent(self,(s["x"],s["y"]))
+        elif (next_loc == 2 and self.current_loc != NodeType.C):
+            next_pos = random.choice(self.model.clinics)
             self.current_loc = NodeType.C
 
-        # 3. Update infected state
-        self.state = self.next_state
+        if (self.state == State.I or self.state == State.A):
+            self.model.inf_counter_cell[self.pos[0]][self.pos[1]] -= 1
+            self.model.inf_counter_cell[next_pos[0]][next_pos[1]] += 1
+
+        if (next_pos != self.pos):
+            self.model.grid.move_agent(self,next_pos)
