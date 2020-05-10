@@ -11,24 +11,19 @@ from Person import State
 
 # TODO - Description
 
-# TODO - Implement Graph library? Not sure how useful except for visualization...
-
 # Step size is effectively "1 hour" 
 n_steps = 100
 
 #### CONFIGURATION #### (TODO, make GUI/file input?) 
 # 1. Define Population
-# TODO - Consider doing this by sampling?
 population_size = 5000
 n_doc = 200
 n_essential = 1000
 # Remaining are implicitly the "normal" type (social distancing)
-# TODO - Make sure sum is <= 1.0
 initial_sick = 5 # randomly assign TODO - consider sampling and doing a proportion?
 
 # 2. Define Environment
 number_households = 4000 # each person is assigned one "household" that may be shared with others
-# TODO - First draft likely won't handle multiple hospitals/services, should add soon
 number_hospitals = 1 # Doctors work here, sick population goes here with higher probability
 number_services = 1 # Essential population works here. Non-sick population goes here with higher probability
 
@@ -56,7 +51,6 @@ model_params = { "population_size":population_size,
                 "p_infect":p_infect,
                 "trans_infection":trans_infection}
 
-# TODO - Clean this up...(dict?)
 #sm = SocialModel(population_size,\
 #                 n_doc,\
 #                 n_essential,\

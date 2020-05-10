@@ -66,7 +66,6 @@ trans_infection = np.matrix('0.998 0.00175 0.00025; 0.0 0.998 0.002; 0.0 0.0 1.0
 # approximating time contagious in hours as on average 18 days (need source)
 # we can then use a R0 of 2.4 to get a p_infect of ~ 0.0056
 
-# TODO - Probability of immunity?
 model_params = {
     "population_size": UserSettableParameter('number', 'Population Size', value=9961),
     "n_doc": UserSettableParameter('number' , 'Number Doctors', value=180),

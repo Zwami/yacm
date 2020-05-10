@@ -9,7 +9,6 @@ class State(Enum):
     A = 2 # Infected, Asymptomatic
     I = 3 # Infected, Symptomatic
     R = 4 # Recovered
-    # D = 5 # Deceased TODO - Add this. May need separate location?
 
 class PopType(Enum):
     C = 1 # Control
@@ -68,7 +67,7 @@ class Person(Agent):
                 if self.next_state == State.R: self.infectability = 0.
                 #print("Agent : ", self.unique_id, " infected!")
         # 1b. Calculate updated disease state otherwise
-        else: # Part of infection chain (TODO, make sure this is appropriately represented)
+        else: 
             next_state_val = self.model.state_transition(self.model.inf_trans,self.state.value - 2)
             self.next_state = State(next_state_val+2)
 
