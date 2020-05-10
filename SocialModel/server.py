@@ -108,12 +108,12 @@ chart = ChartModule([{"Label": "Num Asymptomatic",
                     ],
                     data_collector_name='datacollector')
 
-cpd = ChartModule([{"Label": "Known New Cases Per Day",
-                    "Color": "Red"},
-                    {"Label": "True New Cases Per Day",
-                    "Color": "Black"}
-                    ],
-                    data_collector_name='cases_per_day')
+#cpd = ChartModule([{"Label": "Known New Cases Per Day",
+#                    "Color": "Red"},
+#                    {"Label": "True New Cases Per Day",
+#                    "Color": "Black"}
+#                    ],
+#                    data_collector_name='cases_per_day')
 
 total_cases = ChartModule([{"Label": "Known Number Cases",
                     "Color": "Red"},
@@ -138,7 +138,7 @@ patchart = ChartModule([{"Label": "Number of Patients at Hospitals",
                     ],
                     data_collector_name='num_patients')
 server = ModularServer(SocialModel,
-                       [total_cases,cpd,chart,popchart,patchart],
+                       [total_cases,chart,popchart,patchart],
                        "Social Model",
                        model_params)
 

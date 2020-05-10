@@ -134,7 +134,7 @@ class SocialModel(Model):
         self.clinics = []
         self.services = []
         self.inf_trans = trans_infection
-        R0_ScaleFactor = 0.1 # Test
+        R0_ScaleFactor = 1.0 # Test
         self.p_infect = R0 * R0_ScaleFactor / (t_contagious * 24.)
 
         self.__setup_locations(locations,self.homes,self.clinics,self.services,grid_dim)
@@ -186,9 +186,9 @@ class SocialModel(Model):
         self.unknown_cumulative_cases = initial_sick
         self.known_cumulative_cases = 0
 
-        self.cases_per_day = DataCollector(model_reporters =
-                                           {"Known New Cases Per Day" : known_cases_past_day,
-                                            "True New Cases Per Day" : true_cases_past_day})
+        #self.cases_per_day = DataCollector(model_reporters =
+        #                                   {"Known New Cases Per Day" : known_cases_past_day,
+        #                                    "True New Cases Per Day" : true_cases_past_day})
 
         self.cumulative_cases = DataCollector(model_reporters =
                                              {"Known Number Cases" : known_total_cases,
@@ -220,11 +220,11 @@ class SocialModel(Model):
         self.known_cases_this_step = 0
         self.unknown_cases_this_step = 0
         self.datacollector.collect(self)
-        self.cases_per_day.collect(self)
+        #self.cases_per_day.collect(self)
         self.loc_datacollector.collect(self)
         self.schedule.step()
-        self.known_cases_in_last_day.append(self.known_cases_this_step)
-        self.unknown_cases_in_last_day.append(self.unknown_cases_this_step)
+        #self.known_cases_in_last_day.append(self.known_cases_this_step)
+        #self.unknown_cases_in_last_day.append(self.unknown_cases_this_step)
         self.known_cumulative_cases += self.known_cases_this_step
         self.unknown_cumulative_cases += self.unknown_cases_this_step
         self.cumulative_cases.collect(self)
